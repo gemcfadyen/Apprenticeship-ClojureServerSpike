@@ -20,11 +20,23 @@
               sock (.accept server-sock)]
     (let [msg-in (receive sock)
           msg-out (handler msg-in) ]
+      (println "Message in is: " msg-in)
+      (println "Message out is: " msg-out)
       (send-request sock msg-out))))
 
+(defn- serve-persistent [port handler]
+  (let [running (atom true)]
+    (future
+      (with-open [server-sock (ServerSocket. port)]
+        (while @running
+          (with-open [sock (.accept server-sock)]
+          (println "serving....")
+            (let [msg-in (receive sock)
+                  msg-out (handler msg-in)]
+              (println "Message in is: " msg-in)
+              (println "Message out is: " msg-out)
+              (send-request sock msg-out)))))) running))
 
 (defn -main[]
   (println "Welcome to the Server Spike")
-  (serve 8080 #(.toUpperCase %))
-  )
-
+  (serve-persistent 8080 #(.toUpperCase %)))
