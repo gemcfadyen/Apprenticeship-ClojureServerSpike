@@ -63,10 +63,8 @@
 
                 )
               ; (send-request sock msg-out)
-
               ))))) running))
 
 (defn -main[]
   (println "Welcome to the Server Spike")
-  (serve-persistent 8080 #(.toUpperCase %))
-  )
+  (serve-persistent 8080 #(.toUpperCase %)))
