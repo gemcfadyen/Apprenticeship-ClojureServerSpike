@@ -14,16 +14,35 @@
     (.write writer msg)
     (.flush writer)))
 
-(defn- serve [port handler]
-  (with-open [server-sock (ServerSocket. port)
-              sock (.accept server-sock)]
-    (let [msg-in (receive sock)
-          msg-out (handler msg-in) ]
-      (println "Message in is: " msg-in)
-      (println "Message out is: " msg-out)
-     ; (send-request sock msg-out)
+(defn- send-player-option[socket]
+  (println "Sending player option")
+  (send-request socket "Display: Please enter a player choice(1) HvH (2) RvH (3) HvR\n")
+  (send-request socket "Read: CL-Input\n")
+  )
 
-      )))
+(defn- read-input[socket]
+  (println "Sending read request")
+  (send-request socket "Display: Please enter your next move\n")
+  )
+
+(defn- to-number [input]
+  (Integer/parseInt input))
+
+(defn- validate-input-is-numeric [input]
+  (try
+    (to-number input)
+    true
+    (catch Exception e
+      false
+      )
+    ))
+
+(defn- validate-input[input socket]
+  (println "Validating input...")
+  (if (validate-input-is-numeric (subs input 10))
+    (send-request socket "Display: Please enter your next move\n")
+    (send-request socket "Display: Please re-enter an input\n"))
+  )
 
 (defn- serve-persistent [port handler]
   (let [running (atom true)]
@@ -36,7 +55,16 @@
                   msg-out (handler msg-in)]
               (println "Message in is: " msg-in)
               (println "Message out is: " msg-out)
-              (send-request sock msg-out)))))) running))
+
+              (cond
+                (= msg-in "Request: Get-Player-Options") (send-player-option sock)
+                (= msg-in "Request: Ask-for-input") (read-input sock)
+      ;          (.contains msg-in "Validate:") (validate-input msg-in)
+
+                )
+              ; (send-request sock msg-out)
+
+              ))))) running))
 
 (defn -main[]
   (println "Welcome to the Server Spike")
