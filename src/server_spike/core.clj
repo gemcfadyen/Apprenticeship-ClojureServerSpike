@@ -15,13 +15,13 @@
     (.flush writer)))
 
 (defn- send-player-option[socket]
-  (println "Sending player option")
+  (println "[Server] Sending player option to client...")
   (send-request socket "Display: Please enter a player choice(1) HvH (2) RvH (3) HvR\n")
   (send-request socket "Read: CL-Input\n")
   )
 
 (defn- read-input[socket]
-  (println "Sending read request")
+  (println "[Server] Sending read request...")
   (send-request socket "Display: Please enter your next move\n")
   )
 
@@ -38,7 +38,7 @@
     ))
 
 (defn- validate-input[input socket]
-  (println "Validating input...")
+  (println "[Server] Validating input...")
   (if (validate-input-is-numeric (subs input 10))
     (send-request socket "Display: Please enter your next move\n")
     (send-request socket "Display: Please re-enter an input\n"))
@@ -50,11 +50,11 @@
       (with-open [server-sock (ServerSocket. port)]
         (while @running
           (with-open [sock (.accept server-sock)]
-            (println "serving....")
+            (println "[Server] serving....")
             (let [msg-in (receive sock)
                   msg-out (handler msg-in)]
-              (println "Message in is: " msg-in)
-              (println "Message out is: " msg-out)
+              (println "[Server] Message in is: " msg-in)
+              (println "[Server] Message out is: " msg-out)
 
               (cond
                 (= msg-in "Request: Get-Player-Options") (send-player-option sock)
@@ -62,9 +62,8 @@
       ;          (.contains msg-in "Validate:") (validate-input msg-in)
 
                 )
-              ; (send-request sock msg-out)
               ))))) running))
 
 (defn -main[]
-  (println "Welcome to the Server Spike")
+  (println "Welcome to the Server Spike!")
   (serve-persistent 8080 #(.toUpperCase %)))
