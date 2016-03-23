@@ -1,8 +1,8 @@
 (ns server-spike.core
   (:require [clojure.java.io :as io])
+  (:require [clojure.data.json :as json])
   (import [java.net ServerSocket])
-  (:gen-class)
-  )
+  (:gen-class))
 
 (defn- receive [socket]
   ;"Read a line of text data from a socket"
@@ -16,32 +16,17 @@
 
 (defn- send-player-option[socket]
   (println "[Server] Sending player option to client...")
-  (send-request socket "Display: Please enter a player choice(1) HvH (2) RvH (3) HvR\n")
-  (send-request socket "Read: CL-Input\n")
+  (send-request socket (str (json/write-str { "action" "Display"
+                                        "1" "HvH",
+                                        "2" "RvH" ,
+                                       "3" "HvR"
+                                        }) "\n"))
+  (send-request socket (str (json/write-str {"action" "Read-CL-Input"}) "\n"))
   )
 
 (defn- read-input[socket]
   (println "[Server] Sending read request...")
-  (send-request socket "Display: Please enter your next move\n")
-  )
-
-(defn- to-number [input]
-  (Integer/parseInt input))
-
-(defn- validate-input-is-numeric [input]
-  (try
-    (to-number input)
-    true
-    (catch Exception e
-      false
-      )
-    ))
-
-(defn- validate-input[input socket]
-  (println "[Server] Validating input...")
-  (if (validate-input-is-numeric (subs input 10))
-    (send-request socket "Display: Please enter your next move\n")
-    (send-request socket "Display: Please re-enter an input\n"))
+  (send-request socket (str (json/write-str {"action" "Display-Next-Move"}) "\n"))
   )
 
 (defn- serve-persistent [port handler]
@@ -59,8 +44,6 @@
               (cond
                 (= msg-in "Request: Get-Player-Options") (send-player-option sock)
                 (= msg-in "Request: Ask-for-input") (read-input sock)
-      ;          (.contains msg-in "Validate:") (validate-input msg-in)
-
                 )
               ))))) running))
 
