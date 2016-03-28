@@ -17,10 +17,10 @@
 (defn- send-player-option[socket]
   (println "[Server] Sending player option to client...")
   (send-request socket (str (json/write-str { "action" "Display"
-                                        "1" "HvH",
-                                        "2" "RvH" ,
-                                       "3" "HvR"
-                                        }) "\n"))
+                                             "1" "HvH",
+                                             "2" "RvH" ,
+                                             "3" "HvR"
+                                             }) "\n"))
   (send-request socket (str (json/write-str {"action" "Read-CL-Input"}) "\n"))
   )
 
